@@ -88,5 +88,8 @@ Link-https://stellar.expert/explorer/testnet/contract/CCA5QL6UBMEB7J4ISQ6XGOWKYW
 
 
 ## 👨‍💻 Author
+Harshit Jha
+
+contact at-jhaharshit34@gmail.com
 
 Built as a decentralized escrow solution using Stellar Soroban.
