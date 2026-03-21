@@ -77,7 +77,7 @@ export default function Home() {
 
           <h1 className="mb-3">
             <span className="block text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
-              <span className="text-white">Supply Chain </span>
+              <span className="text-white">Escrow Service </span>
               <span className="bg-gradient-to-r from-[#7c6cf0] via-[#4fc3f7] to-[#7c6cf0] bg-[length:200%_auto] animate-gradient-shift bg-clip-text text-transparent">
                 on the Blockchain
               </span>
@@ -85,7 +85,7 @@ export default function Home() {
           </h1>
 
           <p className="mx-auto max-w-lg text-sm sm:text-base leading-relaxed text-white/40">
-            Register products, track shipments, and verify authenticity — immutably on Stellar.
+         Register products, secure transactions, and verify authenticity — immutably on Stellar.
           </p>
 
           {/* Inline stats */}
