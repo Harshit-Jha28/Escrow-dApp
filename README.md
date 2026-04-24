@@ -1,88 +1,32 @@
-# 🚀 Escrow Service (Soroban Smart Contract)
+Escrow dApp
+ Project Description
 
-## 📌 Project Description
-This project implements a basic Escrow Service using Soroban smart contracts on the Stellar blockchain. It enables secure transactions between a buyer and a seller without requiring trust between the parties.
+Escrow dApp is a decentralized application built on blockchain technology that enables secure and trustless transactions between two parties (buyer and seller) with the help of a smart contract acting as an intermediary.
 
-Funds are held in escrow until predefined conditions are met, ensuring fairness and reducing risk in peer-to-peer transactions.
+In traditional transactions, trust is required between parties. This project eliminates that need by using a smart contract to hold funds securely until predefined conditions are met.
+Key Features
+ Trustless transactions using smart contracts
+ Role-based participants: Buyer, Seller, (optional) Arbiter
+ Funds held securely in the contract (escrow)
+ Payment released only after conditions are fulfilled
+ Refund mechanism if conditions are not met
+ Transparent and tamper-proof transactions
+ How It Works
+Buyer initiates a transaction and deposits funds into the smart contract
+Funds are locked in escrow
+Seller fulfills the agreement (e.g., delivers product/service)
+Buyer confirms → funds released to seller
+If dispute occurs → arbiter/logic decides outcome
 
----
+This model significantly reduces fraud risk and ensures fairness for both parties, a common use case of blockchain escrow systems
 
-## ⚙️ What It Does
-
-- Allows a buyer to lock funds into a smart contract
-- Holds funds securely until release conditions are met
-- Enables:
-  - Buyer to release funds to seller
-  - Seller to refund buyer if needed
-- Prevents unauthorized access using cryptographic authentication
-
----
-
-## ✨ Features
-
-- 🔒 Secure escrow storage on-chain
-- 👤 Buyer-controlled fund release
-- 🔄 Seller-controlled refunds
-- ⚡ Built on Soroban (fast & low-cost)
-- 🧾 Transparent and verifiable transactions
-- 🛡️ Prevents double spending / double release
-
----
-
-## 🧱 Tech Stack
-
-- **Blockchain:** Stellar
-- **Smart Contracts:** Soroban
-- **Language:** Rust
-- **SDK:** soroban-sdk
-
----
-
-## 🛠️ How It Works
-
-1. **Create Escrow**
-   - Buyer initializes escrow with:
-     - Buyer address
-     - Seller address
-     - Amount
-
-2. **Release Funds**
-   - Buyer approves transaction
-   - Funds are released to seller
-
-3. **Refund**
-   - Seller can cancel and refund buyer
-
----
-
-## 📦 Contract Functions
-
-| Function        | Description                     |
-|----------------|--------------------------------|
-| `create_escrow`| Initializes escrow             |
-| `release`      | Releases funds to seller       |
-| `refund`       | Refunds funds to buyer         |
-| `get_escrow`   | Returns escrow details         |
-
----
-
-## 🔗 Deployed Smart Contract Link
-
-Escrow Service:  
-contract address-CCA5QL6UBMEB7J4ISQ6XGOWKYWMCBMLG2E5LZQBAVZTMYVXQ7F6WPHSL
-Link-https://stellar.expert/explorer/testnet/contract/CCA5QL6UBMEB7J4ISQ6XGOWKYWMCBMLG2E5LZQBAVZTMYVXQ7F6WPHSL
-
-
----
-
-## 🚧 Future Improvements
-
-- ⏳ Add time-based escrow expiry
-- 🤝 Multi-signature approval (buyer + arbiter)
-- ⚖️ Dispute resolution system
-- 💰 Support for multiple token types
-- 📱 Frontend dApp integration
-
+Tech Stack
+Blockchain: Ethereum
+Smart Contracts: Solidity
+Development Framework: Hardhat / Truffle
+Frontend: React / Next.js 
+Wallet Integration: MetaMask
+Web3 Library: ethers.js / web3.js
 ---<img width="1920" height="1080" alt="Screenshot (90)" src="https://github.com/user-attachments/assets/3e29bc9c-fde1-40f1-b749-dd00c16a193a" />
 
 <img width="1920" height="1080" alt="Screenshot (100)" src="https://github.com/user-attachments/assets/4fd44178-a86c-413b-9bf3-b02e30243e7d" />
