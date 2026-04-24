@@ -79,16 +79,16 @@ http://localhost:3000
 - Connect your wallet to the application  
 - Ensure you are on the correct Stellar network (Testnet or Mainnet)  
 ## Project Structure
+
 Escrow-dApp/
-│── client/
-│ ├── app/
-│ ├── components/
-│ ├── utils/
-│ └── package.json
-│
-│── contract/
-│── public/
-│── README.md
+├── client/
+│   ├── app/
+│   ├── components/
+│   ├── utils/
+│   └── package.json
+├── contract/
+├── public/
+└── README.md
 ## Future Improvements
 
 - Add dispute resolution system with third-party arbiter  
