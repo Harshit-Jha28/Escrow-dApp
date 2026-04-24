@@ -59,7 +59,7 @@ Make sure you have installed:
 
 ## Clone the Repository
 
-``bash
+bash
 git clone https://github.com/Harshit-Jha28/Escrow-dApp.git
 cd Escrow-dApp/client
 Run the Development Server
