@@ -57,9 +57,9 @@ Make sure you have installed:
 - Freighter Wallet (browser extension)  
 - Git  
 
-### Clone the Repository
+## Clone the Repository
 
-```bash
+``bash
 git clone https://github.com/Harshit-Jha28/Escrow-dApp.git
 cd Escrow-dApp/client
 Run the Development Server
