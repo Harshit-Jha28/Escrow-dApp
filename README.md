@@ -88,21 +88,24 @@ Escrow-dApp/
 │── contract/            
 │── public/              
 │── README.md
-##Future Improvements
-Add dispute resolution system with third-party arbiter
-Support multiple Stellar assets
-Implement transaction dashboard and analytics
-Enable real-time transaction notifications
-Add multi-signature escrow functionality
-Contributing
+## Future Improvements
+
+- Add dispute resolution system with third-party arbiter  
+- Support multiple Stellar assets  
+- Implement transaction dashboard and analytics  
+- Enable real-time transaction notifications  
+- Add multi-signature escrow functionality  
+
+## Contributing
 
 Contributions are welcome.
 
-Fork the repository
-Create a new branch
-Make your changes
-Submit a pull request
-License
+1. Fork the repository  
+2. Create a new branch  
+3. Make your changes  
+4. Submit a pull request  
+
+## License
 
 This project is licensed under the MIT License.
 
