@@ -72,11 +72,11 @@ Open in Browser
 Once the server is running, open:
 
 http://localhost:3000
-##Connect Wallet
+
+Connect Wallet
 Install and open Freighter Wallet (browser extension)
 Connect your wallet to the application
-Ensure you are on the correct Stellar network (Testnet or Mainnet as required)
-
+Ensure you are on the correct Stellar network (Testnet or Mainnet)
 ##Project Structure
 Escrow-dApp/
 │── client/
