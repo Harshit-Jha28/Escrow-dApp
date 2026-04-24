@@ -81,15 +81,15 @@ http://localhost:3000
 ## Project Structure
 
 Project Structure
-Escrow-dApp
-client
-app
-components
-utils
-package.json
-contract
-public
-README.md
+-Escrow-dApp
+-client
+-app
+-components
+-utils
+-package.json
+-contract
+-public
+-README.md
 ## Future Improvements
 
 - Add dispute resolution system with third-party arbiter  
