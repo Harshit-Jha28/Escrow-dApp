@@ -27,6 +27,17 @@ This model significantly reduces fraud risk and ensures fairness for both partie
 - Blockchain: Stellar
 - Wallet Integration: Freighter Wallet
 - SDK: Stellar SDK
+  
+  ## ⚙️ Setup Instructions (Run Locally)
+
+### 🔧 Prerequisites
+
+Make sure you have installed:
+
+* **Node.js** (v16+ recommended)
+* **npm** or **yarn**
+* **MetaMask** browser extension
+* **Git**
 ---<img width="1920" height="1080" alt="Screenshot (90)" src="https://github.com/user-attachments/assets/3e29bc9c-fde1-40f1-b749-dd00c16a193a" />
 
 <img width="1920" height="1080" alt="Screenshot (100)" src="https://github.com/user-attachments/assets/4fd44178-a86c-413b-9bf3-b02e30243e7d" />
