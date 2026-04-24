@@ -1,96 +1,109 @@
- Stellar Escrow dApp
- Project Description
+# Stellar Escrow dApp
+
+## Project Description
 
 The Stellar Escrow dApp is a decentralized application built on the Stellar network that enables secure, trustless transactions between two parties without relying on a centralized intermediary.
 
-This application leverages Stellar’s fast and low-cost transactions along with smart contract logic (Soroban or transaction-based conditions) to ensure that funds are only released when predefined conditions are met.
+This application ensures that funds are only released when predefined conditions are met.
 
- Why This Project?
+## Why This Project?
 
-In traditional online transactions, buyers and sellers must trust each other — which introduces risk. This dApp removes that dependency by:
+In traditional online transactions, buyers and sellers must trust each other, which introduces risk. This dApp removes that dependency by:
 
-Locking funds securely in escrow
-Enforcing rules via blockchain logic
-Ensuring transparency and immutability
- Key Features
- Trustless escrow system on Stellar
- Fast & low-fee transactions
- Buyer–Seller interaction model
- Secure fund locking mechanism
- Conditional fund release
- Refund support in case of disputes/failure
- Transparent on-chain transaction history
- How It Works
-Buyer initiates escrow and deposits funds into the system
-Funds are securely locked on the Stellar network
-Seller fulfills the agreement (product/service delivery)
-Buyer confirms completion
-Smart logic releases funds to the seller
- If conditions are not met, funds can be refunded to the buyer
- Tech Stack
- Frontend
- React
- Next.js
- Tailwind CSS
- Blockchain & Web3
- Stellar
- Stellar SDK
- Freighter Wallet
- Setup Instructions (Run Locally)
- Prerequisites
+- Locking funds securely in escrow  
+- Enforcing rules via blockchain logic  
+- Ensuring transparency and immutability  
+
+## Key Features
+
+- Trustless escrow system on Stellar  
+- Fast and low-fee transactions  
+- Buyer–Seller interaction model  
+- Secure fund locking mechanism  
+- Conditional fund release  
+- Refund support in case of disputes or failure  
+- Transparent on-chain transaction history  
+
+## How It Works
+
+1. Buyer initiates escrow and deposits funds into the system  
+2. Funds are securely locked on the Stellar network  
+3. Seller fulfills the agreement (product/service delivery)  
+4. Buyer confirms completion  
+5. Funds are released to the seller  
+
+If conditions are not met, funds can be refunded to the buyer.
+
+## Tech Stack
+
+### Frontend
+- React  
+- Next.js  
+- Tailwind CSS  
+
+### Blockchain & Web3
+- Stellar  
+- Stellar SDK  
+- Freighter Wallet  
+
+## Setup Instructions (Run Locally)
+
+### Prerequisites
 
 Make sure you have installed:
 
-Node.js (v16 or above)
-npm or yarn
-Freighter Wallet (browser extension)
-Git
+- Node.js (v16 or above)  
+- npm or yarn  
+- Freighter Wallet (browser extension)  
+- Git  
 
-Clone the Repository
+### Clone the Repository
+
+```bash
 git clone https://github.com/Harshit-Jha28/Escrow-dApp.git
 cd Escrow-dApp/client
-Install Dependencies
-npm install
 Run the Development Server
+
+Start the local development server:
+
 npm run dev
 Open in Browser
+
+Once the server is running, open:
+
 http://localhost:3000
-
- Connect Wallet
-Install and open Freighter Wallet
-Connect your wallet to the app
-Ensure you are on the correct Stellar network (Testnet/Mainnet as required)
-
+Connect Wallet
+Install and open Freighter Wallet (browser extension)
+Connect your wallet to the application
+Ensure you are on the correct Stellar network (Testnet or Mainnet as required)
+Project Structure
 Escrow-dApp/
-│── client/              # Next.js frontend
-│   ├── app/             # App router / pages
-│   ├── components/      # UI components
-│   ├── utils/           # Stellar interactions
+│── client/
+│   ├── app/             
+│   ├── components/      
+│   ├── utils/           
 │   └── package.json
 │
-│── public/              # Static assets
+│── contract/            
+│── public/              
 │── README.md
+Future Improvements
+Add dispute resolution system with third-party arbiter
+Support multiple Stellar assets
+Implement transaction dashboard and analytics
+Enable real-time transaction notifications
+Add multi-signature escrow functionality
+Contributing
 
- Future Improvements
- Dispute resolution system with third-party arbiter
- Support for multiple Stellar assets
- Transaction dashboard & analytics
- Real-time transaction notifications
- Multi-signature escrow logic
+Contributions are welcome.
 
- Contributing
-
-Contributions are welcome!
-Feel free to fork the repository and submit a pull request.
-
- License
+Fork the repository
+Create a new branch
+Make your changes
+Submit a pull request
+License
 
 This project is licensed under the MIT License.
-
- Support
-
-If you found this project helpful, consider giving it a ⭐ on GitHub!
-
 
 ---<img width="1920" height="1080" alt="Screenshot (90)" src="https://github.com/user-attachments/assets/3e29bc9c-fde1-40f1-b749-dd00c16a193a" />
 
