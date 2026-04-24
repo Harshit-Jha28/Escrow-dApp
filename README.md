@@ -67,26 +67,27 @@ Run the Development Server
 Start the local development server:
 
 npm run dev
-Open in Browser
+## Open in Browser
 
 Once the server is running, open:
 
 http://localhost:3000
 
-Connect Wallet
-Install and open Freighter Wallet (browser extension)
-Connect your wallet to the application
-Ensure you are on the correct Stellar network (Testnet or Mainnet)
-##Project Structure
+## Connect Wallet
+
+- Install and open Freighter Wallet (browser extension)  
+- Connect your wallet to the application  
+- Ensure you are on the correct Stellar network (Testnet or Mainnet)  
+## Project Structure
 Escrow-dApp/
 │── client/
-│   ├── app/             
-│   ├── components/      
-│   ├── utils/           
-│   └── package.json
+│ ├── app/
+│ ├── components/
+│ ├── utils/
+│ └── package.json
 │
-│── contract/            
-│── public/              
+│── contract/
+│── public/
 │── README.md
 ## Future Improvements
 
