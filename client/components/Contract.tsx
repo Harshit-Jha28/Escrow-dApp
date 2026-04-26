@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   createEscrow,
   setEscrowAmount as setEscrowAmountContract,
@@ -9,17 +9,12 @@ import {
   releaseEscrow,
   cancelEscrow,
   claimTimeout,
-  isEscrowResolved,
-  getEscrowCount,
   CONTRACT_ADDRESS,
+  scValToNative,
 } from "@/hooks/contract";
-import { AnimatedCard } from "@/components/ui/animated-card";
-import { Spotlight } from "@/components/ui/spotlight";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
-// ── Icons ────────────────────────────────────────────────────
+// ── Icons ────────────────────────────────────────────────
 
 function SpinnerIcon() {
   return (
@@ -32,19 +27,7 @@ function SpinnerIcon() {
 function PlusIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-      <path d="M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-      <path d="M8 16H3v5" />
+      <path d="M5 12h14" /><path d="M12 5v14" />
     </svg>
   );
 }
@@ -52,8 +35,7 @@ function RefreshIcon() {
 function SearchIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
     </svg>
   );
 }
@@ -69,9 +51,7 @@ function CheckIcon() {
 function AlertIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
+      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   );
 }
@@ -79,17 +59,7 @@ function AlertIcon() {
 function ClockIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function DollarIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
     </svg>
   );
 }
@@ -102,50 +72,51 @@ function ShieldIcon() {
   );
 }
 
-// ── Styled Input ─────────────────────────────────────────────
+// ── Input ────────────────────────────────────────────────
 
-function Input({
-  label,
-  ...props
-}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="space-y-2">
-      <label className="block text-[11px] font-medium uppercase tracking-wider text-white/30">
-        {label}
-      </label>
-      <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-px transition-all focus-within:border-[#7c6cf0]/30 focus-within:shadow-[0_0_20px_rgba(124,108,240,0.08)]">
-        <input
-          {...props}
-          className="w-full rounded-[11px] bg-transparent px-4 py-3 font-mono text-sm text-white/90 placeholder:text-white/15 outline-none"
-        />
-      </div>
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-[#666]">{label}</label>
+      <input
+        {...props}
+        className="w-full rounded-lg border border-[#262626] bg-[#111] px-3 py-2.5 font-mono text-sm text-[#ededed] placeholder:text-[#444] focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30 transition-colors outline-none"
+      />
     </div>
   );
 }
 
-// ── Escrow State Badge ───────────────────────────────────────
+// ── Button ───────────────────────────────────────────────
 
-const STATE_CONFIG: Record<string, { color: string; bg: string; border: string; dot: string; variant: "success" | "warning" | "info" | "error" }> = {
-  Pending: { color: "text-[#fbbf24]", bg: "bg-[#fbbf24]/10", border: "border-[#fbbf24]/20", dot: "bg-[#fbbf24]", variant: "warning" },
-  Released: { color: "text-[#34d399]", bg: "bg-[#34d399]/10", border: "border-[#34d399]/20", dot: "bg-[#34d399]", variant: "success" },
-  Cancelled: { color: "text-[#f87171]", bg: "bg-[#f87171]/10", border: "border-[#f87171]/20", dot: "bg-[#f87171]", variant: "error" },
-  Expired: { color: "text-[#4fc3f7]", bg: "bg-[#4fc3f7]/10", border: "border-[#4fc3f7]/20", dot: "bg-[#4fc3f7]", variant: "info" },
+function Button({ variant = "primary", className = "", children, ...props }: { variant?: "primary" | "secondary" | "danger" } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const styles = {
+    primary: "bg-[#ededed] text-[#0a0a0a] hover:bg-white disabled:bg-[#333] disabled:text-[#666]",
+    secondary: "bg-[#191919] text-[#a1a1a1] border border-[#262626] hover:bg-[#222] hover:text-[#ededed] disabled:opacity-50",
+    danger: "bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 hover:bg-[#ef4444]/20 disabled:opacity-50",
+  };
+  return (
+    <button className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all active:scale-[0.98] disabled:cursor-not-allowed ${styles[variant]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+}
+
+// ── State Config ─────────────────────────────────────────
+
+const STATE_VARIANT: Record<string, "success" | "warning" | "info" | "error"> = {
+  Pending: "warning",
+  Released: "success",
+  Cancelled: "error",
+  Expired: "info",
 };
 
-// ── Main Component ───────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────
 
 type Tab = "create" | "view" | "interact";
 
 interface EscrowData {
-  buyer: string;
-  seller: string;
-  amount: string;
-  created_at: string;
-  deadline: string;
-  buyer_released: boolean;
-  seller_released: boolean;
-  buyer_cancelled: boolean;
-  seller_cancelled: boolean;
+  buyer: string; seller: string; amount: string; created_at: string; deadline: string;
+  buyer_released: boolean; seller_released: boolean; buyer_cancelled: boolean; seller_cancelled: boolean;
 }
 
 interface ContractUIProps {
@@ -154,57 +125,34 @@ interface ContractUIProps {
   isConnecting: boolean;
 }
 
+// ── Main Component ───────────────────────────────────────
+
 export default function ContractUI({ walletAddress, onConnect, isConnecting }: ContractUIProps) {
   const [activeTab, setActiveTab] = useState<Tab>("create");
   const [error, setError] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<string | null>(null);
 
-  // Create escrow state
   const [sellerAddress, setSellerAddress] = useState("");
   const [deadlineHours, setDeadlineHours] = useState("24");
   const [escrowAmount, setEscrowAmount] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createdEscrowId, setCreatedEscrowId] = useState<string | null>(null);
 
-  // View escrow state
   const [viewEscrowId, setViewEscrowId] = useState("");
   const [isViewing, setIsViewing] = useState(false);
   const [escrowData, setEscrowData] = useState<EscrowData | null>(null);
   const [escrowState, setEscrowState] = useState<string | null>(null);
 
-  // Interact state
   const [interactEscrowId, setInteractEscrowId] = useState("");
   const [isInteracting, setIsInteracting] = useState(false);
 
   const truncate = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  const formatAmount = (amount: string | number) => {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return num.toLocaleString();
-  };
+  const formatXLM = (stroops: string) => (parseFloat(stroops) / 10000000).toLocaleString();
 
-  // Calculate deadline timestamp
-  const getDeadlineTimestamp = () => {
-    const hours = parseInt(deadlineHours) || 24;
-    const now = Math.floor(Date.now() / 1000);
-    return BigInt(now + hours * 3600);
-  };
+  const getDeadlineTimestamp = () => BigInt(Math.floor(Date.now() / 1000) + (parseInt(deadlineHours) || 24) * 3600);
 
-  // Convert U256 escrow ID to string
-  const parseEscrowId = (result: any): string => {
-    if (typeof result === 'object' && result !== null) {
-      if ('value' in result) return result.value.toString();
-      if ('high' in result && 'low' in result) {
-        const high = BigInt(result.high);
-        const low = BigInt(result.low);
-        return ((high << 64n) + low).toString();
-      }
-    }
-    return String(result);
-  };
-
-  // Parse escrow data from contract response
   const parseEscrowData = (data: any): EscrowData | null => {
-    if (!data || typeof data !== 'object') return null;
+    if (!data || typeof data !== "object") return null;
     return {
       buyer: data.buyer?.[0] || data.buyer || "",
       seller: data.seller?.[0] || data.seller || "",
@@ -222,399 +170,226 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: C
     if (!walletAddress) return setError("Connect wallet first");
     if (!sellerAddress.trim()) return setError("Enter seller address");
     if (!escrowAmount.trim() || parseFloat(escrowAmount) <= 0) return setError("Enter valid amount");
-    
-    setError(null);
-    setIsCreating(true);
-    setTxStatus("Creating escrow...");
-    setCreatedEscrowId(null);
-    
+    setError(null); setIsCreating(true); setTxStatus("Creating escrow..."); setCreatedEscrowId(null);
     try {
-      // Create escrow
       const result = await createEscrow(walletAddress, walletAddress, sellerAddress.trim(), getDeadlineTimestamp());
-      const escrowId = parseEscrowId(result);
-      
-      // Set amount
+      let escrowId: string;
+      if (result && typeof result === "object" && "returnValue" in result && result.returnValue) {
+        escrowId = scValToNative(result.returnValue).toString();
+      } else {
+        escrowId = String(result);
+      }
       setTxStatus("Setting amount...");
-      await setEscrowAmountContract(walletAddress, escrowId, BigInt(parseFloat(escrowAmount) * 10000000));
-      
-      setTxStatus("Escrow created on-chain!");
-      setCreatedEscrowId(escrowId);
-      setSellerAddress("");
-      setEscrowAmount("");
-      setTimeout(() => setTxStatus(null), 5000);
+      await setEscrowAmountContract(walletAddress, escrowId, BigInt(Math.round(parseFloat(escrowAmount) * 10000000)));
+      setTxStatus("Escrow created!"); setCreatedEscrowId(escrowId);
+      setSellerAddress(""); setEscrowAmount("");
+      setTimeout(() => setTxStatus(null), 4000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Transaction failed");
-      setTxStatus(null);
-    } finally {
-      setIsCreating(false);
-    }
+      setError(err instanceof Error ? err.message : "Transaction failed"); setTxStatus(null);
+    } finally { setIsCreating(false); }
   }, [walletAddress, sellerAddress, escrowAmount, deadlineHours]);
 
   const handleViewEscrow = useCallback(async () => {
     if (!viewEscrowId.trim()) return setError("Enter escrow ID");
-    setError(null);
-    setIsViewing(true);
-    setEscrowData(null);
-    setEscrowState(null);
-    
+    setError(null); setIsViewing(true); setEscrowData(null); setEscrowState(null);
     try {
       const [data, state] = await Promise.all([
         getEscrow(viewEscrowId.trim(), walletAddress || undefined),
         getEscrowState(viewEscrowId.trim(), walletAddress || undefined),
       ]);
-      
       setEscrowData(parseEscrowData(data));
-      
-      // Parse state - could be number or string
-      if (typeof state === 'number') {
-        const states = ["Pending", "Released", "Cancelled", "Expired"];
-        setEscrowState(states[state] || "Unknown");
-      } else if (typeof state === 'string') {
-        setEscrowState(state);
-      } else if (state && typeof state === 'object') {
-        const states = ["Pending", "Released", "Cancelled", "Expired"];
-        if ('value' in state) {
-          setEscrowState(states[Number(state.value)] || "Unknown");
-        } else {
-          setEscrowState("Pending");
-        }
-      }
+      if (typeof state === "number") setEscrowState(["Pending", "Released", "Cancelled", "Expired"][state] || "Unknown");
+      else if (typeof state === "string") setEscrowState(state);
+      else if (state && typeof state === "object" && "value" in state) setEscrowState(["Pending", "Released", "Cancelled", "Expired"][Number(state.value)] || "Unknown");
+      else setEscrowState("Pending");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Query failed");
-    } finally {
-      setIsViewing(false);
-    }
+    } finally { setIsViewing(false); }
   }, [viewEscrowId, walletAddress]);
 
-  const handleRelease = useCallback(async () => {
+  const handleAction = useCallback(async (action: "release" | "cancel" | "claim_timeout", label: string) => {
     if (!walletAddress) return setError("Connect wallet first");
     if (!interactEscrowId.trim()) return setError("Enter escrow ID");
-    setError(null);
-    setIsInteracting(true);
-    setTxStatus("Releasing escrow...");
+    setError(null); setIsInteracting(true); setTxStatus(`${label}...`);
     try {
-      await releaseEscrow(walletAddress, interactEscrowId.trim());
-      setTxStatus("Escrow released!");
-      setTimeout(() => setTxStatus(null), 5000);
+      const fn = action === "release" ? releaseEscrow : action === "cancel" ? cancelEscrow : claimTimeout;
+      await fn(walletAddress, interactEscrowId.trim());
+      setTxStatus(`${label} — done!`);
+      setTimeout(() => setTxStatus(null), 4000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Transaction failed");
-      setTxStatus(null);
-    } finally {
-      setIsInteracting(false);
-    }
+      setError(err instanceof Error ? err.message : "Transaction failed"); setTxStatus(null);
+    } finally { setIsInteracting(false); }
   }, [walletAddress, interactEscrowId]);
 
-  const handleCancel = useCallback(async () => {
-    if (!walletAddress) return setError("Connect wallet first");
-    if (!interactEscrowId.trim()) return setError("Enter escrow ID");
-    setError(null);
-    setIsInteracting(true);
-    setTxStatus("Cancelling escrow...");
-    try {
-      await cancelEscrow(walletAddress, interactEscrowId.trim());
-      setTxStatus("Escrow cancelled!");
-      setTimeout(() => setTxStatus(null), 5000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Transaction failed");
-      setTxStatus(null);
-    } finally {
-      setIsInteracting(false);
-    }
-  }, [walletAddress, interactEscrowId]);
-
-  const handleClaimTimeout = useCallback(async () => {
-    if (!walletAddress) return setError("Connect wallet first");
-    if (!interactEscrowId.trim()) return setError("Enter escrow ID");
-    setError(null);
-    setIsInteracting(true);
-    setTxStatus("Claiming timeout refund...");
-    try {
-      await claimTimeout(walletAddress, interactEscrowId.trim());
-      setTxStatus("Refund claimed!");
-      setTimeout(() => setTxStatus(null), 5000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Transaction failed");
-      setTxStatus(null);
-    } finally {
-      setIsInteracting(false);
-    }
-  }, [walletAddress, interactEscrowId]);
-
-  const tabs: { key: Tab; label: string; icon: React.ReactNode; color: string }[] = [
-    { key: "create", label: "Create", icon: <PlusIcon />, color: "#34d399" },
-    { key: "view", label: "View", icon: <SearchIcon />, color: "#4fc3f7" },
-    { key: "interact", label: "Interact", icon: <ShieldIcon />, color: "#fbbf24" },
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: "create", label: "Create", icon: <PlusIcon /> },
+    { key: "view", label: "View", icon: <SearchIcon /> },
+    { key: "interact", label: "Interact", icon: <ShieldIcon /> },
   ];
 
   return (
-    <div className="w-full max-w-2xl animate-fade-in-up-delayed">
-      {/* Toasts */}
+    <div className="w-full max-w-xl animate-fade-in-up-delayed">
+      {/* Error toast */}
       {error && (
-        <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#f87171]/15 bg-[#f87171]/[0.05] px-4 py-3 backdrop-blur-sm animate-slide-down">
-          <span className="mt-0.5 text-[#f87171]"><AlertIcon /></span>
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-[#ef4444]/20 bg-[#ef4444]/5 px-4 py-3 animate-slide-down">
+          <span className="mt-0.5 text-[#ef4444]"><AlertIcon /></span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[#f87171]/90">Error</p>
-            <p className="text-xs text-[#f87171]/50 mt-0.5 break-all">{error}</p>
+            <p className="text-sm font-medium text-[#ef4444]">Error</p>
+            <p className="text-xs text-[#ef4444]/70 mt-0.5 break-all">{error}</p>
           </div>
-          <button onClick={() => setError(null)} className="shrink-0 text-[#f87171]/30 hover:text-[#f87171]/70 text-lg leading-none">&times;</button>
+          <button onClick={() => setError(null)} className="text-[#ef4444]/40 hover:text-[#ef4444] text-lg leading-none">&times;</button>
         </div>
       )}
 
+      {/* Status toast */}
       {txStatus && (
-        <div className="mb-4 flex items-center gap-3 rounded-xl border border-[#34d399]/15 bg-[#34d399]/[0.05] px-4 py-3 backdrop-blur-sm shadow-[0_0_30px_rgba(52,211,153,0.05)] animate-slide-down">
-          <span className="text-[#34d399]">
-            {txStatus.includes("on-chain") || txStatus.includes("claimed") || txStatus.includes("released") || txStatus.includes("cancelled") ? <CheckIcon /> : <SpinnerIcon />}
-          </span>
-          <span className="text-sm text-[#34d399]/90">{txStatus}</span>
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-[#22c55e]/20 bg-[#22c55e]/5 px-4 py-3 animate-slide-down">
+          <span className="text-[#22c55e]">{txStatus.includes("done") || txStatus.includes("created") ? <CheckIcon /> : <SpinnerIcon />}</span>
+          <span className="text-sm text-[#22c55e]">{txStatus}</span>
         </div>
       )}
 
       {/* Main Card */}
-      <Spotlight className="rounded-2xl">
-        <AnimatedCard className="p-0" containerClassName="rounded-2xl">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#34d399]/20 to-[#4fc3f7]/20 border border-white/[0.06]">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#34d399]">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white/90">Escrow Service</h3>
-                <p className="text-[10px] text-white/25 font-mono mt-0.5">{truncate(CONTRACT_ADDRESS)}</p>
-              </div>
+      <div className="rounded-xl border border-[#262626] bg-[#111] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#262626] px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-semibold text-[#ededed]">Escrow Service</h3>
+              <p className="text-[10px] text-[#666] font-mono">{truncate(CONTRACT_ADDRESS)}</p>
             </div>
-            <Badge variant="success" className="text-[10px]">Soroban</Badge>
           </div>
+          <Badge variant="info">Soroban</Badge>
+        </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-white/[0.06] px-2">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => { setActiveTab(t.key); setError(null); setEscrowData(null); setCreatedEscrowId(null); }}
-                className={cn(
-                  "relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-all",
-                  activeTab === t.key ? "text-white/90" : "text-white/35 hover:text-white/55"
-                )}
-              >
-                <span style={activeTab === t.key ? { color: t.color } : undefined}>{t.icon}</span>
-                {t.label}
-                {activeTab === t.key && (
-                  <span
-                    className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full transition-all"
-                    style={{ background: `linear-gradient(to right, ${t.color}, ${t.color}66)` }}
-                  />
-                )}
-              </button>
+        {/* Tabs */}
+        <div className="flex border-b border-[#262626]">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => { setActiveTab(t.key); setError(null); setEscrowData(null); setCreatedEscrowId(null); }}
+              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === t.key ? "text-[#ededed]" : "text-[#666] hover:text-[#a1a1a1]"
+              }`}
+            >
+              {t.icon} {t.label}
+              {activeTab === t.key && <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#6366f1]" />}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          {activeTab === "create" && (
+            <>
+              <Input label="Seller Address" value={sellerAddress} onChange={(e) => setSellerAddress(e.target.value)} placeholder="G..." />
+              <Input label="Amount (XLM)" type="number" value={escrowAmount} onChange={(e) => setEscrowAmount(e.target.value)} placeholder="100" />
+              <Input label="Deadline (hours)" type="number" value={deadlineHours} onChange={(e) => setDeadlineHours(e.target.value)} placeholder="24" />
+              {createdEscrowId && (
+                <div className="rounded-lg border border-[#22c55e]/20 bg-[#22c55e]/5 px-4 py-3 animate-fade-in-up">
+                  <p className="text-xs text-[#22c55e]/70">Escrow Created</p>
+                  <p className="font-mono text-sm text-[#22c55e] mt-0.5">ID: {createdEscrowId}</p>
+                </div>
+              )}
+              {walletAddress ? (
+                <Button onClick={handleCreateEscrow} disabled={isCreating} className="w-full">
+                  {isCreating ? <><SpinnerIcon /> Creating...</> : <><PlusIcon /> Create Escrow</>}
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={onConnect} disabled={isConnecting} className="w-full">
+                  Connect wallet to create escrow
+                </Button>
+              )}
+            </>
+          )}
+
+          {activeTab === "view" && (
+            <>
+              <Input label="Escrow ID" value={viewEscrowId} onChange={(e) => setViewEscrowId(e.target.value)} placeholder="0" />
+              <Button onClick={handleViewEscrow} disabled={isViewing} className="w-full">
+                {isViewing ? <><SpinnerIcon /> Querying...</> : <><SearchIcon /> View Escrow</>}
+              </Button>
+              {escrowData && (
+                <div className="rounded-lg border border-[#262626] overflow-hidden animate-fade-in-up">
+                  <div className="border-b border-[#262626] px-4 py-2.5 flex items-center justify-between bg-[#0a0a0a]">
+                    <span className="text-xs font-medium text-[#666]">Escrow Details</span>
+                    {escrowState && <Badge variant={STATE_VARIANT[escrowState] || "info"}>{escrowState}</Badge>}
+                  </div>
+                  <div className="p-4 space-y-2.5 text-sm">
+                    {[
+                      ["Amount", `${formatXLM(escrowData.amount)} XLM`],
+                      ["Buyer", truncate(escrowData.buyer)],
+                      ["Seller", truncate(escrowData.seller)],
+                      ["Deadline", escrowData.deadline ? new Date(Number(escrowData.deadline) * 1000).toLocaleString() : "N/A"],
+                    ].map(([k, v]) => (
+                      <div key={k} className="flex items-center justify-between">
+                        <span className="text-[#666]">{k}</span>
+                        <span className="font-mono text-[#a1a1a1]">{v}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-4 pt-2 border-t border-[#262626]">
+                      <div className="flex items-center gap-1.5">
+                        <div className={`h-2 w-2 rounded-full ${escrowData.buyer_released ? "bg-[#22c55e]" : "bg-[#333]"}`} />
+                        <span className="text-xs text-[#666]">Buyer Released</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className={`h-2 w-2 rounded-full ${escrowData.seller_released ? "bg-[#22c55e]" : "bg-[#333]"}`} />
+                        <span className="text-xs text-[#666]">Seller Released</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "interact" && (
+            <>
+              <Input label="Escrow ID" value={interactEscrowId} onChange={(e) => setInteractEscrowId(e.target.value)} placeholder="0" />
+              <div className="space-y-3 pt-1">
+                {[
+                  { action: "release" as const, label: "Releasing escrow", btnLabel: "Release Funds", note: "Both parties must call", icon: <CheckIcon />, variant: "primary" as const },
+                  { action: "cancel" as const, label: "Cancelling escrow", btnLabel: "Cancel Escrow", note: "Both parties must call", icon: <AlertIcon />, variant: "secondary" as const },
+                  { action: "claim_timeout" as const, label: "Claiming refund", btnLabel: "Claim Timeout", note: "Only buyer, after deadline", icon: <ClockIcon />, variant: "danger" as const },
+                ].map((item) => (
+                  <div key={item.action} className="rounded-lg border border-[#262626] p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[#ededed]">{item.btnLabel}</span>
+                      <span className="text-[10px] text-[#666]">{item.note}</span>
+                    </div>
+                    {walletAddress ? (
+                      <Button variant={item.variant} onClick={() => handleAction(item.action, item.label)} disabled={isInteracting} className="w-full">
+                        {isInteracting ? <><SpinnerIcon /> Processing...</> : <>{item.icon} {item.btnLabel}</>}
+                      </Button>
+                    ) : (
+                      <Button variant="secondary" onClick={onConnect} className="w-full">
+                        Connect to {item.btnLabel}
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-[#262626] px-5 py-2.5 flex items-center justify-between">
+          <p className="text-[10px] text-[#444]">Escrow Service · Soroban</p>
+          <div className="flex items-center gap-3">
+            {["Pending", "Released", "Cancelled"].map((s) => (
+              <span key={s} className="flex items-center gap-1">
+                <span className={`h-1.5 w-1.5 rounded-full ${s === "Pending" ? "bg-[#eab308]" : s === "Released" ? "bg-[#22c55e]" : "bg-[#ef4444]"}`} />
+                <span className="text-[9px] text-[#444]">{s}</span>
+              </span>
             ))}
           </div>
-
-          {/* Tab Content */}
-          <div className="p-6">
-            {/* Create Escrow */}
-            {activeTab === "create" && (
-              <div className="space-y-5">
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 font-mono text-sm">
-                  <span style={{ color: "#34d399" }} className="font-semibold">fn</span>
-                  <span className="text-white/70">create</span>
-                  <span className="text-white/20 text-xs">(buyer: Address, seller: Address, deadline: u64)</span>
-                </div>
-                
-                <Input 
-                  label="Seller Address" 
-                  value={sellerAddress} 
-                  onChange={(e) => setSellerAddress(e.target.value)} 
-                  placeholder="G..." 
-                />
-                
-                <Input 
-                  label="Amount (XLM)" 
-                  type="number"
-                  value={escrowAmount} 
-                  onChange={(e) => setEscrowAmount(e.target.value)} 
-                  placeholder="100"
-                />
-                
-                <Input 
-                  label="Deadline (hours)" 
-                  type="number"
-                  value={deadlineHours} 
-                  onChange={(e) => setDeadlineHours(e.target.value)} 
-                  placeholder="24"
-                />
-
-                {createdEscrowId && (
-                  <div className="rounded-xl border border-[#34d399]/20 bg-[#34d399]/[0.05] px-4 py-3 animate-fade-in-up">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-[#34d399]/60">Escrow Created</p>
-                    <p className="font-mono text-sm text-[#34d399] mt-1">ID: {createdEscrowId}</p>
-                  </div>
-                )}
-
-                {walletAddress ? (
-                  <ShimmerButton onClick={handleCreateEscrow} disabled={isCreating} shimmerColor="#34d399" className="w-full">
-                    {isCreating ? <><SpinnerIcon /> Creating...</> : <><PlusIcon /> Create Escrow</>}
-                  </ShimmerButton>
-                ) : (
-                  <button
-                    onClick={onConnect}
-                    disabled={isConnecting}
-                    className="w-full rounded-xl border border-dashed border-[#34d399]/20 bg-[#34d399]/[0.03] py-4 text-sm text-[#34d399]/60 hover:border-[#34d399]/30 hover:text-[#34d399]/80 active:scale-[0.99] transition-all disabled:opacity-50"
-                  >
-                    Connect wallet to create escrow
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* View Escrow */}
-            {activeTab === "view" && (
-              <div className="space-y-5">
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 font-mono text-sm">
-                  <span style={{ color: "#4fc3f7" }} className="font-semibold">fn</span>
-                  <span className="text-white/70">get_escrow</span>
-                  <span className="text-white/20 text-xs">(escrow_id: U256)</span>
-                </div>
-
-                <Input 
-                  label="Escrow ID" 
-                  value={viewEscrowId} 
-                  onChange={(e) => setViewEscrowId(e.target.value)} 
-                  placeholder="0"
-                />
-
-                <ShimmerButton onClick={handleViewEscrow} disabled={isViewing} shimmerColor="#4fc3f7" className="w-full">
-                  {isViewing ? <><SpinnerIcon /> Querying...</> : <><SearchIcon /> View Escrow</>}
-                </ShimmerButton>
-
-                {escrowData && (
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden animate-fade-in-up">
-                    <div className="border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-white/25">Escrow Details</span>
-                      {escrowState && (
-                        <Badge variant={STATE_CONFIG[escrowState]?.variant || "info"}>
-                          <span className={cn("h-1.5 w-1.5 rounded-full", STATE_CONFIG[escrowState]?.dot)} />
-                          {escrowState}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/35 flex items-center gap-1.5"><DollarIcon /> Amount</span>
-                        <span className="font-mono text-sm text-white/80">{formatAmount(parseFloat(escrowData.amount) / 10000000)} XLM</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/35">Buyer</span>
-                        <span className="font-mono text-sm text-white/80">{truncate(escrowData.buyer)}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/35">Seller</span>
-                        <span className="font-mono text-sm text-white/80">{truncate(escrowData.seller)}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/35 flex items-center gap-1.5"><ClockIcon /> Deadline</span>
-                        <span className="font-mono text-sm text-white/80">
-                          {escrowData.deadline ? new Date(Number(escrowData.deadline) * 1000).toLocaleString() : "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 pt-2 border-t border-white/[0.06]">
-                        <div className="flex items-center gap-2">
-                          <div className={cn("h-2 w-2 rounded-full", escrowData.buyer_released ? "bg-[#34d399]" : "bg-white/20")} />
-                          <span className="text-[10px] text-white/35">Buyer Released</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className={cn("h-2 w-2 rounded-full", escrowData.seller_released ? "bg-[#34d399]" : "bg-white/20")} />
-                          <span className="text-[10px] text-white/35">Seller Released</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Interact with Escrow */}
-            {activeTab === "interact" && (
-              <div className="space-y-5">
-                <Input 
-                  label="Escrow ID" 
-                  value={interactEscrowId} 
-                  onChange={(e) => setInteractEscrowId(e.target.value)} 
-                  placeholder="0"
-                />
-
-                <div className="space-y-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-white/25">Actions (require both parties)</p>
-                  
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">Release Funds</span>
-                      <span className="text-[10px] text-white/25">Both parties must call</span>
-                    </div>
-                    {walletAddress ? (
-                      <ShimmerButton onClick={handleRelease} disabled={isInteracting} shimmerColor="#34d399" className="w-full">
-                        {isInteracting ? <><SpinnerIcon /> Processing...</> : <><CheckIcon /> Release</>}
-                      </ShimmerButton>
-                    ) : (
-                      <button onClick={onConnect} className="w-full rounded-lg border border-dashed border-[#34d399]/20 bg-[#34d399]/[0.02] py-2.5 text-xs text-[#34d399]/60">
-                        Connect to Release
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">Cancel Escrow</span>
-                      <span className="text-[10px] text-white/25">Both parties must call</span>
-                    </div>
-                    {walletAddress ? (
-                      <ShimmerButton onClick={handleCancel} disabled={isInteracting} shimmerColor="#fbbf24" className="w-full">
-                        {isInteracting ? <><SpinnerIcon /> Processing...</> : <><RefreshIcon /> Cancel</>}
-                      </ShimmerButton>
-                    ) : (
-                      <button onClick={onConnect} className="w-full rounded-lg border border-dashed border-[#fbbf24]/20 bg-[#fbbf24]/[0.02] py-2.5 text-xs text-[#fbbf24]/60">
-                        Connect to Cancel
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">Claim Timeout</span>
-                      <span className="text-[10px] text-white/25">Only buyer, after deadline</span>
-                    </div>
-                    {walletAddress ? (
-                      <ShimmerButton onClick={handleClaimTimeout} disabled={isInteracting} shimmerColor="#f87171" className="w-full">
-                        {isInteracting ? <><SpinnerIcon /> Processing...</> : <><ClockIcon /> Claim Refund</>}
-                      </ShimmerButton>
-                    ) : (
-                      <button onClick={onConnect} className="w-full rounded-lg border border-dashed border-[#f87171]/20 bg-[#f87171]/[0.02] py-2.5 text-xs text-[#f87171]/60">
-                        Connect to Claim
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-white/[0.04] px-6 py-3 flex items-center justify-between">
-            <p className="text-[10px] text-white/15">Escrow Service &middot; Soroban</p>
-            <div className="flex items-center gap-2">
-              {["Pending", "Released", "Cancelled"].map((s, i) => (
-                <span key={s} className="flex items-center gap-1.5">
-                  <span className={cn("h-1 w-1 rounded-full", STATE_CONFIG[s]?.dot ?? "bg-white/20")} />
-                  <span className="font-mono text-[9px] text-white/15">{s}</span>
-                  {i < 2 && <span className="text-white/10 text-[8px]">&rarr;</span>}
-                </span>
-              ))}
-            </div>
-          </div>
-        </AnimatedCard>
-      </Spotlight>
+        </div>
+      </div>
     </div>
   );
 }

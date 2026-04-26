@@ -9,18 +9,18 @@ interface BadgeProps {
 }
 
 const variants = {
-  default: "border-white/[0.08] bg-white/[0.04] text-white/60",
-  success: "border-[#34d399]/20 bg-[#34d399]/10 text-[#34d399]",
-  warning: "border-[#fbbf24]/20 bg-[#fbbf24]/10 text-[#fbbf24]",
-  info: "border-[#4fc3f7]/20 bg-[#4fc3f7]/10 text-[#4fc3f7]",
-  error: "border-[#f87171]/20 bg-[#f87171]/10 text-[#f87171]",
+  default: "border-[#333] bg-[#1a1a1a] text-[#a1a1a1]",
+  success: "border-[#22c55e]/30 bg-[#22c55e]/10 text-[#22c55e]",
+  warning: "border-[#eab308]/30 bg-[#eab308]/10 text-[#eab308]",
+  info: "border-[#3b82f6]/30 bg-[#3b82f6]/10 text-[#3b82f6]",
+  error: "border-[#ef4444]/30 bg-[#ef4444]/10 text-[#ef4444]",
 };
 
 export function Badge({ children, className, variant = "default" }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-xs font-medium",
         variants[variant],
         className
       )}
