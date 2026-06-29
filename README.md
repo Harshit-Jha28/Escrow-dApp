@@ -111,7 +111,7 @@ Contributions are welcome.
 
 This project is licensed under the MIT License.
 ## Live App Link
-https://escrow-d-app.vercel.app/
+https://escrow-d-app.vercel.app
 
 ---<img width="1920" height="1080" alt="Screenshot (90)" src="https://github.com/user-attachments/assets/3e29bc9c-fde1-40f1-b749-dd00c16a193a" />
 
